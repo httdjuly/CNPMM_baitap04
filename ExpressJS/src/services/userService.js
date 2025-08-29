@@ -22,16 +22,18 @@ const createUserService = async (name, email, password) => {
             role: "User"
         })
         return result;
+        
+
     } catch (error){
         console.log(error);
         return null;
     }
 }
 
-const loginService = async (email1,password)=>{
+const loginService = async (email,password)=>{
     try{
         //fetch user by email
-        const user = await User.findOne({email:email1});
+        const user = await User.findOne({email:email});
         if(user){
             const isMatchPassword = await bcrypt.compare(password,user.password)
              if (!isMatchPassword){
@@ -46,16 +48,16 @@ const loginService = async (email1,password)=>{
                     email:user.email,
                     name:user.name
                 }
-                const acccess_token = jwt.sign(
+                const access_token = jwt.sign(
                     payload,
-                    process.env.JWT_SECRECT,
+                    process.env.JWT_SECRET,
                     {
                         expiresIn: process.env.JWT_EXPIRE
                     }
                 )
                 return {
                     EC:0,
-                    acccess_token,
+                    access_token,
                     user: {
                         email:user.email,
                         name:user.name
