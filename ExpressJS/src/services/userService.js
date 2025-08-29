@@ -1,0 +1,90 @@
+require("dotenv").config();
+const User = require("../models/user");
+const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken");
+const saltRounds = 10;
+
+const createUserService = async (name, email, password) => {
+    try {
+        const user = await User.findOne({email});
+        if(user){
+            console.log('>>>user exist, chon 1 email khac: $(email)');
+            return null;
+        }
+        //hash user password
+        const hashPassword = await bcrypt.hash(password,saltRounds)
+
+        // save user to database
+        let result = await User.create({
+            name:name,
+            email:email,
+            password:hashPassword,
+            role: "User"
+        })
+        return result;
+    } catch (error){
+        console.log(error);
+        return null;
+    }
+}
+
+const loginService = async (email1,password)=>{
+    try{
+        //fetch user by email
+        const user = await User.findOne({email:email1});
+        if(user){
+            const isMatchPassword = await bcrypt.compare(password,user.password)
+             if (!isMatchPassword){
+                return {
+                    EC: 2,
+                    EM: "Email/Password khoong hop le"
+                }
+
+             }else{
+                //create an acccess token
+                const payload ={
+                    email:user.email,
+                    name:user.name
+                }
+                const acccess_token = jwt.sign(
+                    payload,
+                    process.env.JWT_SECRECT,
+                    {
+                        expiresIn: process.env.JWT_EXPIRE
+                    }
+                )
+                return {
+                    EC:0,
+                    acccess_token,
+                    user: {
+                        email:user.email,
+                        name:user.name
+                    }
+                };
+             }
+        } else {
+            return {
+                EC:1,
+                EM: "Email/Pass khoong hop le"
+            }
+        }
+        
+       
+    } catch(error){
+        console.log(error);
+        return null;
+    }
+}
+const getUserService = async ()=>{
+    try{
+        let result= await User.find({}).select("-password");
+        return result;
+    }
+    catch (error){
+        console.log(error);
+        return null;
+    }
+}
+module.exports = {
+    createUserService, loginService, getUserService
+}
