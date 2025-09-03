@@ -43,7 +43,7 @@ const LoginPage = () => {
                 <Form
                     name="basic"
                     onFinish={onFinish}
-                    autocomplete="off"
+                    autoComplete="off"
                     layout='vertical'
                 >
                     <Form.Item
